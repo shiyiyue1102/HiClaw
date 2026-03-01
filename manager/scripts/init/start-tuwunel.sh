@@ -10,6 +10,7 @@ export CONDUWUIT_ADDRESS="0.0.0.0"
 export CONDUWUIT_PORT=6167
 export CONDUWUIT_ALLOW_REGISTRATION=true
 export CONDUWUIT_REGISTRATION_TOKEN="${HICLAW_REGISTRATION_TOKEN}"
+export CONDUWUIT_ALLOW_LEGACY_MEDIA=true
 
 # User creation is handled by start-manager-agent.sh via Registration API
 # (single-step registration, no UIAA flow needed)

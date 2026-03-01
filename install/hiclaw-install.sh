@@ -429,6 +429,53 @@ detect_socket() {
     fi
 }
 
+# Detect local LAN IP address (cross-platform: macOS and Linux)
+detect_lan_ip() {
+    local ip=""
+
+    # macOS: try common Wi-Fi / Ethernet interfaces
+    if command -v ipconfig &>/dev/null; then
+        for iface in en0 en1 en2 en3 en4; do
+            ip=$(ipconfig getifaddr "${iface}" 2>/dev/null)
+            if [ -n "${ip}" ]; then
+                echo "${ip}"
+                return 0
+            fi
+        done
+    fi
+
+    # Linux: ip route — most reliable
+    if command -v ip &>/dev/null; then
+        ip=$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}')
+        if [ -n "${ip}" ]; then
+            echo "${ip}"
+            return 0
+        fi
+    fi
+
+    # Linux fallback: hostname -I (space-separated list, take first non-loopback)
+    if command -v hostname &>/dev/null; then
+        ip=$(hostname -I 2>/dev/null | tr ' ' '\n' | grep -v '^127\.' | grep -v '^::' | head -1)
+        if [ -n "${ip}" ]; then
+            echo "${ip}"
+            return 0
+        fi
+    fi
+
+    # Last resort: ifconfig
+    if command -v ifconfig &>/dev/null; then
+        ip=$(ifconfig 2>/dev/null | awk '/inet /{if($2!~/^127\./){print $2; exit}}')
+        # Strip "addr:" prefix that some ifconfig versions add
+        ip="${ip#addr:}"
+        if [ -n "${ip}" ]; then
+            echo "${ip}"
+            return 0
+        fi
+    fi
+
+    echo ""
+}
+
 # ============================================================
 # Manager Installation (Interactive)
 # ============================================================
@@ -942,6 +989,8 @@ EOF
     log "  ${HICLAW_MATRIX_DOMAIN%%:*} ${HICLAW_MATRIX_CLIENT_DOMAIN} ${HICLAW_AI_GATEWAY_DOMAIN} ${HICLAW_FS_DOMAIN}"
     log ""
     local element_url="http://${HICLAW_MATRIX_CLIENT_DOMAIN}:${HICLAW_PORT_GATEWAY}/#/login"
+    local lan_ip
+    lan_ip=$(detect_lan_ip)
     echo -e "\033[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
     echo -e "\033[33m  ★ Open the following URL in your browser to start:                           ★\033[0m"
     echo -e "\033[33m                                                                                 \033[0m"
@@ -954,6 +1003,25 @@ EOF
     echo -e "\033[33m  After login, start chatting with the Manager!                                  \033[0m"
     echo -e "\033[33m    Tell it: \"Create a Worker named alice for frontend dev\"                      \033[0m"
     echo -e "\033[33m    The Manager will handle everything automatically.                            \033[0m"
+    echo -e "\033[33m                                                                                 \033[0m"
+    echo -e "\033[33m  ─────────────────────────────────────────────────────────────────────────────  \033[0m"
+    echo -e "\033[33m  📱 Mobile access (FluffyChat / Element Mobile):                               \033[0m"
+    echo -e "\033[33m                                                                                 \033[0m"
+    if [ -n "${lan_ip}" ]; then
+    echo -e "\033[33m    1. Download FluffyChat or Element on your phone                             \033[0m"
+    echo -e "\033[33m    2. Set homeserver to: \033[1;36mhttp://${lan_ip}:${HICLAW_PORT_GATEWAY}\033[0m"
+    echo -e "\033[33m    3. Login with:                                                               \033[0m"
+    echo -e "\033[33m         Username: \033[1;32m${HICLAW_ADMIN_USER}\033[0m"
+    echo -e "\033[33m         Password: \033[1;32m${HICLAW_ADMIN_PASSWORD}\033[0m"
+    else
+    echo -e "\033[33m    1. Download FluffyChat or Element on your phone                             \033[0m"
+    echo -e "\033[33m    2. Set homeserver to: \033[1;36mhttp://<this-machine-LAN-IP>:${HICLAW_PORT_GATEWAY}\033[0m"
+    echo -e "\033[33m       (Could not detect LAN IP automatically — check with: ifconfig / ip addr) \033[0m"
+    echo -e "\033[33m    3. Login with:                                                               \033[0m"
+    echo -e "\033[33m         Username: \033[1;32m${HICLAW_ADMIN_USER}\033[0m"
+    echo -e "\033[33m         Password: \033[1;32m${HICLAW_ADMIN_PASSWORD}\033[0m"
+    fi
+    echo -e "\033[33m                                                                                 \033[0m"
     echo -e "\033[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
     log ""
     log "--- Other Consoles ---"
