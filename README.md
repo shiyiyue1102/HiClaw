@@ -220,10 +220,12 @@ make help  # All available targets
 
 ## Community
 
+- [Discord](https://discord.gg/n6mV8xEYUF)
+- [DingTalk Group](https://qr.dingtalk.com/action/joingroup?code=v1,k1,0etR5l8fxeb/6/mzE5hRE1uy4tkiwxvPV9+TdBv7sEM=&_dt_no_comment=1&origin=11)
+- WeChat Group — scan to join:
+
 <p align="center">
   <img src="https://img.alicdn.com/imgextra/i4/O1CN01vntwjP1Xr3okA9ASH_!!6000000002976-2-tps-939-1455.png" width="200" alt="WeChat Group" />
-  <br/>
-  <sub>WeChat Group — scan to join</sub>
 </p>
 
 ## License
