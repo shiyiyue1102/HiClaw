@@ -435,7 +435,8 @@ $script:Messages = @{
     # --- Other consoles and tips ---
     "success.other_consoles" = @{ zh = "--- 其他控制台 ---"; en = "--- Other Consoles ---" }
     "success.higress_console" = @{ zh = "  Higress 控制台: http://localhost:{0}（用户名: {1} / 密码: {2}）"; en = "  Higress Console: http://localhost:{0} (Username: {1} / Password: {2})" }
-    "success.openclaw_console" = @{ zh = "  OpenClaw 控制台: http://localhost:{0}（用户名: {1} / 密码: {2}）"; en = "  OpenClaw Console: http://localhost:{0} (Username: {1} / Password: {2})" }
+    "success.openclaw_console" = @{ zh = "  OpenClaw 控制台（本地）: http://localhost:{0}（无需登录）"; en = "  OpenClaw Console (local): http://localhost:{0} (no login required)" }
+    "success.openclaw_console_gateway" = @{ zh = "  OpenClaw 控制台（网关）: http://console-local.hiclaw.io（用户名: {0} / 密码: {1}）"; en = "  OpenClaw Console (gateway): http://console-local.hiclaw.io (Username: {0} / Password: {1})" }
     "success.switch_llm.title" = @{ zh = "--- 切换 LLM 提供商 ---"; en = "--- Switch LLM Providers ---" }
     "success.switch_llm.hint" = @{ zh = "  您可以通过 Higress 控制台切换到其他 LLM 提供商（OpenAI、Anthropic 等）。"; en = "  You can switch to other LLM providers (OpenAI, Anthropic, etc.) via Higress Console." }
     "success.switch_llm.docs" = @{ zh = "  详细说明请参阅:"; en = "  For detailed instructions, see:" }
@@ -1888,7 +1889,8 @@ function Install-Manager {
     Write-Log ""
     Write-Log (Get-Msg "success.other_consoles")
     Write-Log (Get-Msg "success.higress_console" -f $config.PORT_CONSOLE, $config.ADMIN_USER, $config.ADMIN_PASSWORD)
-    Write-Log (Get-Msg "success.openclaw_console" -f $config.PORT_OPENCLAW_CONSOLE, $config.ADMIN_USER, $config.ADMIN_PASSWORD)
+    Write-Log (Get-Msg "success.openclaw_console" -f $config.PORT_OPENCLAW_CONSOLE)
+    Write-Log (Get-Msg "success.openclaw_console_gateway" -f $config.ADMIN_USER, $config.ADMIN_PASSWORD)
     Write-Log ""
     Write-Log (Get-Msg "success.switch_llm.title")
     Write-Log (Get-Msg "success.switch_llm.hint")

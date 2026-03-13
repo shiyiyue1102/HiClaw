@@ -577,8 +577,10 @@ msg() {
         "success.other_consoles.en") text="--- Other Consoles ---" ;;
         "success.higress_console.zh") text="  Higress 控制台: http://localhost:%s（用户名: %s / 密码: %s）" ;;
         "success.higress_console.en") text="  Higress Console: http://localhost:%s (Username: %s / Password: %s)" ;;
-        "success.openclaw_console.zh") text="  OpenClaw 控制台: http://localhost:%s（用户名: %s / 密码: %s）" ;;
-        "success.openclaw_console.en") text="  OpenClaw Console: http://localhost:%s (Username: %s / Password: %s)" ;;
+        "success.openclaw_console.zh") text="  OpenClaw 控制台（本地）: http://localhost:%s（无需登录）" ;;
+        "success.openclaw_console.en") text="  OpenClaw Console (local): http://localhost:%s (no login required)" ;;
+        "success.openclaw_console_gateway.zh") text="  OpenClaw 控制台（网关）: http://console-local.hiclaw.io（用户名: %s / 密码: %s）" ;;
+        "success.openclaw_console_gateway.en") text="  OpenClaw Console (gateway): http://console-local.hiclaw.io (Username: %s / Password: %s)" ;;
         "success.switch_llm.title.zh") text="--- 切换 LLM 提供商 ---" ;;
         "success.switch_llm.title.en") text="--- Switch LLM Providers ---" ;;
         "success.switch_llm.hint.zh") text="  您可以通过 Higress 控制台切换到其他 LLM 提供商（OpenAI、Anthropic 等）。" ;;
@@ -1845,7 +1847,8 @@ EOF
     log ""
     log "$(msg success.other_consoles)"
     log "$(msg success.higress_console "${HICLAW_PORT_CONSOLE}" "${HICLAW_ADMIN_USER}" "${HICLAW_ADMIN_PASSWORD}")"
-    log "$(msg success.openclaw_console "${HICLAW_PORT_OPENCLAW_CONSOLE:-18888}" "${HICLAW_ADMIN_USER}" "${HICLAW_ADMIN_PASSWORD}")"
+    log "$(msg success.openclaw_console "${HICLAW_PORT_OPENCLAW_CONSOLE:-18888}")"
+    log "$(msg success.openclaw_console_gateway "${HICLAW_ADMIN_USER}" "${HICLAW_ADMIN_PASSWORD}")"
     log ""
     log "$(msg success.switch_llm.title)"
     log "$(msg success.switch_llm.hint)"
