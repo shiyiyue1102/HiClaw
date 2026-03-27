@@ -45,6 +45,7 @@ LOCAL_WORKER         = hiclaw/worker-agent:$(VERSION)
 LOCAL_COPAW_WORKER   = hiclaw/copaw-worker:$(VERSION)
 LOCAL_DOCKER_PROXY   = hiclaw/docker-proxy:$(VERSION)
 LOCAL_OPENCLAW_BASE  = hiclaw/openclaw-base:$(VERSION)
+LOCAL_CONTROLLER     = hiclaw/hiclaw-controller:$(VERSION)
 
 # Higress base image registry (regional mirrors auto-synced from cn-hangzhou primary)
 #   China (default): higress-registry.cn-hangzhou.cr.aliyuncs.com
@@ -92,7 +93,7 @@ LINES          ?= 50
 
 # ---------- Phony targets ----------
 
-.PHONY: all build build-openclaw-base build-manager build-manager-aliyun build-worker build-copaw-worker build-docker-proxy \
+.PHONY: all build build-openclaw-base build-hiclaw-controller build-manager build-manager-aliyun build-worker build-copaw-worker build-docker-proxy \
         tag push push-openclaw-base push-manager push-manager-aliyun push-worker push-copaw-worker push-docker-proxy \
         push-native push-native-manager push-native-worker push-native-copaw-worker \
         buildx-setup \
@@ -123,9 +124,16 @@ OPENCLAW_BASE_VERSION ?= latest
 OPENCLAW_BASE_BUILD_ARG = --build-arg OPENCLAW_BASE_IMAGE=$(OPENCLAW_BASE_IMAGE):$(OPENCLAW_BASE_VERSION)
 OPENCLAW_BASE_PUSH_ARG  = --build-arg OPENCLAW_BASE_IMAGE=$(OPENCLAW_BASE_IMAGE):$(OPENCLAW_BASE_VERSION)
 
-build-manager: ## Build Manager image
+build-hiclaw-controller: ## Build hiclaw-controller image (prerequisite for Manager)
+	@echo "==> Building hiclaw-controller image: $(LOCAL_CONTROLLER)"
+	docker build $(PLATFORM_FLAG) $(DOCKER_BUILD_ARGS) \
+		-t $(LOCAL_CONTROLLER) \
+		./hiclaw-controller/
+
+build-manager: build-hiclaw-controller ## Build Manager image
 	@echo "==> Building Manager image: $(LOCAL_MANAGER) (registry: $(HIGRESS_REGISTRY))"
 	docker build $(PLATFORM_FLAG) $(REGISTRY_ARG) $(BUILTIN_VERSION_ARG) $(OPENCLAW_BASE_BUILD_ARG) $(SHARED_LIB_CTX) $(DOCKER_BUILD_ARGS) \
+		--build-arg HICLAW_CONTROLLER_IMAGE=$(LOCAL_CONTROLLER) \
 		-t $(LOCAL_MANAGER) \
 		./manager/
 
