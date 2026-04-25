@@ -174,9 +174,7 @@ spec:
     - name: alpha-dev
       model: claude-sonnet-4-6
       skills: [github-operations]                      # 内置 skills
-      mcpServers:                                      # MCP Servers（通过 mcporter 调用）
-        - name: github
-          url: https://gateway.example.com/mcp-servers/github/mcp
+      mcpServers: [github]                             # 内置 MCP Servers
       package: file://./alpha-dev.zip                  # 自定义 SOUL.md + 自定义 skills
     - name: alpha-qa
       model: gpt-5-mini

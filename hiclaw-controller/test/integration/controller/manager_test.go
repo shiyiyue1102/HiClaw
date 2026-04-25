@@ -789,7 +789,7 @@ func TestManagerDelete_PartialFailure_StillCompletes(t *testing.T) {
 	waitForManagerRunning(t, mgr)
 
 	// Make cleanup operations fail
-	mockMgrProv.DeprovisionManagerFn = func(_ context.Context, _ string) error {
+	mockMgrProv.DeprovisionManagerFn = func(_ context.Context, _ string, _ []string) error {
 		return fmt.Errorf("simulated deprovision failure")
 	}
 	mockMgrDeploy.CleanupOSSDataFn = func(_ context.Context, _ string) error {
@@ -817,13 +817,11 @@ func TestManagerDelete_PartialFailure_StillCompletes(t *testing.T) {
 // Manager MCP reauthorization test
 // ---------------------------------------------------------------------------
 
-func TestManagerUpdate_MCPServersChange_RewritesMcporterJSON(t *testing.T) {
+func TestManagerUpdate_MCPServersChange_TriggersReauth(t *testing.T) {
 	resetManagerMocks()
 
 	mgrName := fixtures.UniqueName("test-mgr-mcp")
-	mgr := fixtures.NewTestManagerWithMCPServers(mgrName, []v1beta1.MCPServer{
-		{Name: "github", URL: "https://gw.example.com/mcp-servers/github/mcp"},
-	})
+	mgr := fixtures.NewTestManagerWithMCPServers(mgrName, []string{"mcp-server-1"})
 
 	if err := k8sClient.Create(ctx, mgr); err != nil {
 		t.Fatalf("failed to create Manager CR: %v", err)
@@ -835,14 +833,9 @@ func TestManagerUpdate_MCPServersChange_RewritesMcporterJSON(t *testing.T) {
 	waitForManagerRunning(t, mgr)
 
 	mockMgrProv.ClearCalls()
-	mockMgrDeploy.ClearCalls()
 
-	updatedServers := []v1beta1.MCPServer{
-		{Name: "github", URL: "https://gw.example.com/mcp-servers/github/mcp"},
-		{Name: "jira", URL: "https://gw.example.com/mcp-servers/jira/mcp", Transport: "sse"},
-	}
 	updateManagerSpecField(t, mgr, func(m *v1beta1.Manager) {
-		m.Spec.McpServers = updatedServers
+		m.Spec.McpServers = []string{"mcp-server-1", "mcp-server-2"}
 	})
 
 	assertEventually(t, func() error {
@@ -853,26 +846,13 @@ func TestManagerUpdate_MCPServersChange_RewritesMcporterJSON(t *testing.T) {
 		if m.Status.ObservedGeneration != m.Generation {
 			return fmt.Errorf("ObservedGeneration=%d, want %d", m.Status.ObservedGeneration, m.Generation)
 		}
-		// Require Deployer to have been called with the updated McpServers.
-		for _, req := range mockMgrDeploy.Calls.DeployManagerConfig {
-			if req.Name != mgrName {
-				continue
-			}
-			if len(req.McpServers) == len(updatedServers) {
-				match := true
-				for i, s := range updatedServers {
-					if req.McpServers[i].Name != s.Name || req.McpServers[i].URL != s.URL || req.McpServers[i].Transport != s.Transport {
-						match = false
-						break
-					}
-				}
-				if match {
-					return nil
-				}
-			}
-		}
-		return fmt.Errorf("DeployManagerConfig not called with updated McpServers=%v (calls=%d)", updatedServers, len(mockMgrDeploy.Calls.DeployManagerConfig))
+		return nil
 	})
+
+	mcpCount := mockMgrProv.MCPAuthCallCount()
+	if mcpCount == 0 {
+		t.Error("ReconcileMCPAuth should have been called after McpServers change")
+	}
 }
 
 // ---------------------------------------------------------------------------

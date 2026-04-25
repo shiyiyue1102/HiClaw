@@ -28,6 +28,12 @@ type AIRoute struct {
 	AllowedConsumers []string `json:"allowedConsumers,omitempty"`
 }
 
+// MCPServerAuth describes MCP server authorization state.
+type MCPServerAuth struct {
+	Name             string   `json:"name"`
+	AllowedConsumers []string `json:"allowedConsumers,omitempty"`
+}
+
 // PortExposeRequest describes a port to expose through the gateway.
 type PortExposeRequest struct {
 	WorkerName  string // worker identifier

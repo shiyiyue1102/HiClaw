@@ -159,6 +159,7 @@ func applyWorkerSubCmd() *cobra.Command {
 		soul       string
 		soulFile   string
 		skills     string
+		mcpServers string
 		packageURI string
 		expose     string
 		team       string
@@ -172,9 +173,7 @@ func applyWorkerSubCmd() *cobra.Command {
 
   hiclaw apply worker --name alice --zip worker.zip
   hiclaw apply worker --name alice --model qwen3.5-plus
-  hiclaw apply worker --name bob --model claude-sonnet-4-6 --skills github-operations
-
-To configure mcpServers, use a YAML manifest and pass it with 'hiclaw apply -f worker.yaml'.`,
+  hiclaw apply worker --name bob --model claude-sonnet-4-6 --skills github-operations`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if name == "" {
 				return fmt.Errorf("--name is required")
@@ -188,7 +187,7 @@ To configure mcpServers, use a YAML manifest and pass it with 'hiclaw apply -f w
 			}
 
 			return applyWorkerParams(name, model, runtime, image, identity, soul, soulFile,
-				skills, packageURI, expose, team, role)
+				skills, mcpServers, packageURI, expose, team, role)
 		},
 	}
 
@@ -201,6 +200,7 @@ To configure mcpServers, use a YAML manifest and pass it with 'hiclaw apply -f w
 	cmd.Flags().StringVar(&soul, "soul", "", "Worker SOUL.md content (inline)")
 	cmd.Flags().StringVar(&soulFile, "soul-file", "", "Path to SOUL.md file")
 	cmd.Flags().StringVar(&skills, "skills", "", "Comma-separated built-in skills")
+	cmd.Flags().StringVar(&mcpServers, "mcp-servers", "", "Comma-separated MCP servers")
 	cmd.Flags().StringVar(&packageURI, "package", "", "Package URI (nacos://, http://, oss://)")
 	cmd.Flags().StringVar(&expose, "expose", "", "Comma-separated ports to expose")
 	cmd.Flags().StringVar(&team, "team", "", "Team name")
@@ -274,7 +274,7 @@ func applyWorkerZip(name, zipPath, runtimeOverride string) error {
 
 // applyWorkerParams creates or updates a Worker from CLI flags (upsert semantics).
 func applyWorkerParams(name, model, runtime, image, identity, soul, soulFile,
-	skills, packageURI, expose, team, role string) error {
+	skills, mcpServers, packageURI, expose, team, role string) error {
 
 	if model == "" {
 		model = defaultWorkerModel()
@@ -313,6 +313,9 @@ func applyWorkerParams(name, model, runtime, image, identity, soul, soulFile,
 	setIfNotEmpty(req, "role", role)
 	if skills != "" {
 		req["skills"] = splitCSV(skills)
+	}
+	if mcpServers != "" {
+		req["mcpServers"] = splitCSV(mcpServers)
 	}
 	if expose != "" {
 		req["expose"] = parseExposePorts(expose)

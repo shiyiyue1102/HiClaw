@@ -70,10 +70,8 @@ spec:
   skills:                          # HiClaw built-in skills
     - github-operations
     - git-delegation
-  mcpServers:                      # MCP servers callable via mcporter (url = full gateway endpoint)
-    - name: github
-      url: https://gateway.example.com/mcp-servers/github/mcp
-      transport: http              # "http" (default, Streamable HTTP) or "sse"
+  mcpServers:                      # HiClaw built-in MCP Servers (authorized via Higress gateway)
+    - github
 ```
 
 ### Field Reference
@@ -88,7 +86,7 @@ spec:
 | `spec.soul` | string | No | — | Worker personality and values (generates SOUL.md) |
 | `spec.agents` | string | No | — | Agent behavior rules, used to generate AGENTS.md |
 | `spec.skills` | []string | No | — | Built-in skills, distributed by Manager |
-| `spec.mcpServers` | []object | No | — | MCP servers callable via mcporter. Each item: `name` (required, map key in mcporter-servers.json), `url` (required, full gateway endpoint), `transport` (`http` default or `sse`). The controller injects `Authorization: Bearer <gatewayKey>`; gateway-side authorization is out of scope. |
+| `spec.mcpServers` | []string | No | — | Built-in MCP Servers, authorized via Higress gateway |
 | `spec.package` | string | No | — | Custom package URI: `file://`, `http(s)://`, `nacos://`, or controller-resolved `packages/{name}.zip` after upload |
 | `spec.expose` | []object | No | — | Ports to expose via Higress gateway (see [Service Publishing](#service-publishing)) |
 | `spec.channelPolicy` | object | No | — | Additive/deny-list overrides for group @mentions and DMs (see [Channel policy](#channel-policy-worker-and-team)) |
@@ -120,9 +118,7 @@ spec:
   model: claude-sonnet-4-6
   runtime: openclaw
   skills: [github-operations]
-  mcpServers:
-    - name: github
-      url: https://gateway.example.com/mcp-servers/github/mcp
+  mcpServers: [github]
   package: file://./devops-alice.zip    # Contains custom SOUL.md, skills, Dockerfile, etc.
 ```
 
@@ -183,9 +179,7 @@ spec:
     - name: alpha-dev
       model: claude-sonnet-4-6
       skills: [github-operations]
-      mcpServers:
-        - name: github
-          url: https://gateway.example.com/mcp-servers/github/mcp
+      mcpServers: [github]
       soul: |
         # Alpha Dev - Backend Developer
         ## Personality
@@ -248,7 +242,7 @@ spec:
 | `workers[].soul` | string | No | Worker personality and values (generates SOUL.md) |
 | `workers[].agents` | string | No | Custom behavior rules (appended after builtin AGENTS.md) |
 | `workers[].skills` | []string | No | Built-in skills |
-| `workers[].mcpServers` | []object | No | MCP servers (see Worker's `spec.mcpServers` schema) |
+| `workers[].mcpServers` | []string | No | Built-in MCP Servers |
 | `workers[].package` | string | No | Custom package URI |
 | `workers[].expose` | []object | No | Ports to expose via Higress gateway (see [Service Publishing](#service-publishing)) |
 | `workers[].channelPolicy` | object | No | Per-worker communication policy overrides |
@@ -365,8 +359,7 @@ spec:
   skills:
     - worker-management
   mcpServers:
-    - name: github
-      url: https://gateway.example.com/mcp-servers/github/mcp
+    - github
   config:
     heartbeatInterval: 15m
     workerIdleTimeout: 720m
@@ -385,7 +378,7 @@ spec:
 | `spec.soul` | string | No | — | Custom SOUL.md content |
 | `spec.agents` | string | No | — | Custom AGENTS.md content |
 | `spec.skills` | []string | No | — | On-demand Manager skills to enable |
-| `spec.mcpServers` | []object | No | — | MCP servers callable via mcporter. Each item: `name`, `url`, `transport` (`http`/`sse`). Gateway-side authorization is out of scope. |
+| `spec.mcpServers` | []string | No | — | MCP servers to authorize via the gateway |
 | `spec.package` | string | No | — | Package URI (`file://`, `http(s)://`, `nacos://`) |
 | `spec.state` | string | No | `Running` | Desired lifecycle: `Running`, `Sleeping`, `Stopped` |
 | `spec.config.heartbeatInterval` | string | No | — | Heartbeat check interval (e.g. `15m`) |
@@ -634,11 +627,7 @@ bash install/hiclaw-import.sh worker --name alice --package nacos://host:8848/ns
 
 # Create without a package
 bash install/hiclaw-import.sh worker --name bob --model claude-sonnet-4-6 \
-    --skills github-operations,git-delegation
-
-# Note: mcpServers must be configured via YAML manifest (see Worker spec above).
-#       The --mcp-servers flag has been removed — the new schema requires
-#       {name, url, transport} per server and is not expressible as a CSV string.
+    --skills github-operations,git-delegation --mcp-servers github
 ```
 
 ### hiclaw CLI — In-Container Management
@@ -707,9 +696,7 @@ spec:
     - name: backend-dev
       model: claude-sonnet-4-6
       skills: [github-operations, git-delegation]
-      mcpServers:
-        - name: github
-          url: https://gateway.example.com/mcp-servers/github/mcp
+      mcpServers: [github]
     - name: frontend-dev
       model: claude-sonnet-4-6
       skills: [github-operations]

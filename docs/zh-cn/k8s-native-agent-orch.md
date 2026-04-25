@@ -87,10 +87,7 @@ spec:
   model: claude-sonnet-4-6           # 必填：LLM 模型
   runtime: copaw                     # openclaw | copaw（默认 openclaw）
   skills: [github-operations]        # 平台内置技能
-  mcpServers:                        # 通过 mcporter 调用的 MCP Server
-    - name: github
-      url: https://gateway.example.com/mcp-servers/github/mcp
-      transport: http                # "http"（默认）或 "sse"
+  mcpServers: [github]               # 通过 Gateway 授权的 MCP Server
   package: file://./alice-pkg.zip    # 可选：file/http(s)/nacos/packages/…
   soul: |                            # Agent 人格定义
     你是一个专注于前端开发的工程师...
@@ -130,9 +127,7 @@ spec:
     - name: alice
       model: claude-sonnet-4-6
       skills: [github-operations]
-      mcpServers:
-        - name: github
-          url: https://gateway.example.com/mcp-servers/github/mcp
+      mcpServers: [github]
     - name: bob
       model: qwen3.5-plus
       runtime: copaw
@@ -179,9 +174,7 @@ spec:
   # soul: | …                         # 可选：覆盖 SOUL.md
   # agents: | …                       # 可选：覆盖 AGENTS.md
   skills: [worker-management]         # 按需启用的 Manager skills
-  mcpServers:
-    - name: github
-      url: https://gateway.example.com/mcp-servers/github/mcp
+  mcpServers: [github]
   # package: https://…/mgr.zip       # 可选：与 Worker 相同的包 URI 语义
   config:
     heartbeatInterval: 15m
