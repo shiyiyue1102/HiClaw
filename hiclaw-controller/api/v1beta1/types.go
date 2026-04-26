@@ -56,6 +56,24 @@ type MCPServer struct {
 	Transport string `json:"transport,omitempty"`
 }
 
+// RemoteSkill identifies one skill from a remote source.
+// version and label are mutually exclusive; set at most one.
+type RemoteSkill struct {
+	Name    string `json:"name"`
+	Version string `json:"version,omitempty"`
+	Label   string `json:"label,omitempty"`
+}
+
+// RemoteSkillSource groups remote skills by source and auth mode.
+// Source format: nacos://host:port/{namespace-id}
+// AuthType values: "nacos" (username:password embedded in source URL as nacos://user:pass@host:port/namespace, default),
+// "sts-hiclaw" (STS credential provider), "none" (unauthenticated).
+type RemoteSkillSource struct {
+	Source   string        `json:"source"`
+	AuthType string        `json:"authType,omitempty"`
+	Skills   []RemoteSkill `json:"skills"`
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -68,17 +86,18 @@ type Worker struct {
 }
 
 type WorkerSpec struct {
-	Model         string             `json:"model"`
-	Runtime       string             `json:"runtime,omitempty"` // openclaw | copaw | hermes (default: openclaw)
-	Image         string             `json:"image,omitempty"`   // custom Docker image
-	Identity      string             `json:"identity,omitempty"`
-	Soul          string             `json:"soul,omitempty"`
-	Agents        string             `json:"agents,omitempty"`
-	Skills        []string           `json:"skills,omitempty"`
-	McpServers    []MCPServer        `json:"mcpServers,omitempty"`
-	Package       string             `json:"package,omitempty"` // file://, http(s)://, or nacos:// URI
-	Expose        []ExposePort       `json:"expose,omitempty"`  // ports to expose via Higress gateway
-	ChannelPolicy *ChannelPolicySpec `json:"channelPolicy,omitempty"`
+	Model         string              `json:"model"`
+	Runtime       string              `json:"runtime,omitempty"` // openclaw | copaw | hermes (default: openclaw)
+	Image         string              `json:"image,omitempty"`   // custom Docker image
+	Identity      string              `json:"identity,omitempty"`
+	Soul          string              `json:"soul,omitempty"`
+	Agents        string              `json:"agents,omitempty"`
+	Skills        []string            `json:"skills,omitempty"`       // built-in skills only
+	RemoteSkills  []RemoteSkillSource `json:"remoteSkills,omitempty"` // remote skills from source registries
+	McpServers    []MCPServer         `json:"mcpServers,omitempty"`
+	Package       string              `json:"package,omitempty"` // file://, http(s)://, or nacos:// URI
+	Expose        []ExposePort        `json:"expose,omitempty"`  // ports to expose via Higress gateway
+	ChannelPolicy *ChannelPolicySpec  `json:"channelPolicy,omitempty"`
 
 	// State is the desired lifecycle state of the worker.
 	// Valid values: "Running" (default), "Sleeping", "Stopped".
