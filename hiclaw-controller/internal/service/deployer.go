@@ -69,9 +69,7 @@ type DeployerConfig struct {
 	WorkerAgentDir string // source for builtin agent files
 	MatrixDomain   string
 
-	// NacosAuthType and NacosCredClient mirror the same fields on PackageResolver
-	// but are used when PushOnDemandSkills encounters nacos:// skill URIs.
-	NacosAuthType   string
+	// NacosCredClient is used when remoteSkills use sts-hiclaw (see CRD authType).
 	NacosCredClient credprovider.Client
 }
 
@@ -87,7 +85,6 @@ type Deployer struct {
 	agentFSDir      string
 	workerAgentDir  string
 	matrixDomain    string
-	nacosAuthType   string
 	nacosCredClient credprovider.Client
 }
 
@@ -101,7 +98,6 @@ func NewDeployer(cfg DeployerConfig) *Deployer {
 		agentFSDir:      cfg.AgentFSDir,
 		workerAgentDir:  cfg.WorkerAgentDir,
 		matrixDomain:    cfg.MatrixDomain,
-		nacosAuthType:   cfg.NacosAuthType,
 		nacosCredClient: cfg.NacosCredClient,
 	}
 }

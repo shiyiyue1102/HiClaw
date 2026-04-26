@@ -529,8 +529,8 @@ func TestValidateNacosURI_FailsWhenRequestedVersionIsNotOnline(t *testing.T) {
 }
 
 func TestValidateNacosURI_STSHiclaw_RequiresCredClient(t *testing.T) {
-	uri := "nacos://127.0.0.1:19999/public/my-spec"
-	err := ValidateNacosURI(context.Background(), uri, ValidateNacosURIOptions{AuthType: "sts-hiclaw"})
+	uri := "nacos://127.0.0.1:19999/public/my-spec?authType=sts-hiclaw"
+	err := ValidateNacosURI(context.Background(), uri, ValidateNacosURIOptions{})
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -549,8 +549,7 @@ func TestValidateNacosURI_STSHiclaw_SucceedsWithCredClient(t *testing.T) {
 	defer server.Close()
 
 	stub := stubCredClient{}
-	err := ValidateNacosURI(context.Background(), "nacos://"+server.Listener.Addr().String()+"/public/sts-spec", ValidateNacosURIOptions{
-		AuthType:   "sts-hiclaw",
+	err := ValidateNacosURI(context.Background(), "nacos://"+server.Listener.Addr().String()+"/public/sts-spec?authType=sts-hiclaw", ValidateNacosURIOptions{
 		CredClient: stub,
 	})
 	if err != nil {
